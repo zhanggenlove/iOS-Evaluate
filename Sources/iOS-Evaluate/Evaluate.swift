@@ -163,9 +163,10 @@ public final class Evaluate {
       cancelButtonTitle: instance.cancelText,
       theme: theme,
       onRateApp: {
+        // Use the modern environment-based review request
         if let scene = UIApplication.shared.connectedScenes
           .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-          SKStoreReviewController.requestReview(in: scene)
+          AppStore.requestReview(in: scene)
         }
         controller.dismiss(animated: true)
       },

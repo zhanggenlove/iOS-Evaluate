@@ -10,14 +10,17 @@ import SwiftUI
 /// Configuration for customizing the review prompt appearance.
 public struct EvaluateTheme: Sendable {
 
-  /// The image displayed at the top of the review card.
-  public var headerImage: Image?
+  /// The star icon gradient colors (left → right).
+  public var starColors: [Color]
 
-  /// Accent color used for primary action buttons.
-  public var accentColor: Color
+  /// Primary action button gradient colors.
+  public var primaryGradient: [Color]
 
-  /// Color for secondary/cancel actions.
-  public var secondaryColor: Color
+  /// Secondary action button gradient colors.
+  public var secondaryGradient: [Color]
+
+  /// Card background style.
+  public var cardBackground: CardBackground
 
   /// Title text font.
   public var titleFont: Font
@@ -31,25 +34,43 @@ public struct EvaluateTheme: Sendable {
   /// Card corner radius.
   public var cornerRadius: CGFloat
 
-  /// Creates a theme with sensible defaults.
+  /// Available card background styles.
+  public enum CardBackground: Sendable {
+    /// Ultra-thin material blur.
+    case glass
+    /// Solid color background.
+    case solid(Color)
+    /// Gradient background.
+    case gradient([Color])
+  }
+
+  /// Creates a theme with vibrant defaults.
   public init(
-    headerImage: Image? = Image(systemName: "star.fill"),
-    accentColor: Color = .yellow,
-    secondaryColor: Color = .secondary,
+    starColors: [Color] = [.yellow, .orange],
+    primaryGradient: [Color] = [
+      Color(red: 0.35, green: 0.50, blue: 1.0),
+      Color(red: 0.55, green: 0.35, blue: 1.0)
+    ],
+    secondaryGradient: [Color] = [
+      Color(red: 0.95, green: 0.95, blue: 0.97),
+      Color(red: 0.90, green: 0.90, blue: 0.95)
+    ],
+    cardBackground: CardBackground = .glass,
     titleFont: Font = .title2.bold(),
     messageFont: Font = .subheadline,
-    buttonFont: Font = .body.weight(.medium),
-    cornerRadius: CGFloat = 24
+    buttonFont: Font = .body.weight(.semibold),
+    cornerRadius: CGFloat = 28
   ) {
-    self.headerImage = headerImage
-    self.accentColor = accentColor
-    self.secondaryColor = secondaryColor
+    self.starColors = starColors
+    self.primaryGradient = primaryGradient
+    self.secondaryGradient = secondaryGradient
+    self.cardBackground = cardBackground
     self.titleFont = titleFont
     self.messageFont = messageFont
     self.buttonFont = buttonFont
     self.cornerRadius = cornerRadius
   }
 
-  /// The default theme.
+  /// The default theme with vibrant gradients.
   public static let `default` = EvaluateTheme()
 }
