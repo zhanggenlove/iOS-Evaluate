@@ -1,3 +1,7 @@
+<p align="right">
+  <a href="README.md">English</a> · <a href="README_zh.md">简体中文</a> · <a href="README_ja.md">日本語</a> · <a href="README_ko.md">한국어</a>
+</p>
+
 # iOS-Evaluate
 
 [![Swift](https://img.shields.io/badge/Swift-6.2-orange?logo=swift)](https://www.swift.org)
