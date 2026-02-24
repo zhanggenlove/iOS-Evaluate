@@ -8,6 +8,7 @@
 [![Platform](https://img.shields.io/badge/Platform-iOS_26+-blue?logo=apple)](https://developer.apple.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SPM](https://img.shields.io/badge/SPM-Compatible-brightgreen?logo=swift)](https://swift.org/package-manager/)
+[![CocoaPods](https://img.shields.io/cocoapods/v/iOS-Evaluate?logo=cocoapods&color=red)](https://cocoapods.org/pods/iOS-Evaluate)
 
 一个现代化、精美的 iOS 应用评分弹窗库，专为 iOS 26+ 打造。基于 **SwiftUI 渐变设计**、**Swift 6 并发安全** 和 **30+ 语言本地化** 支持。
 
@@ -42,6 +43,20 @@
    https://github.com/zhanggenlove/iOS-Evaluate.git
    ```
 3. 选择版本规则并添加到你的 Target。
+
+### CocoaPods
+
+在 `Podfile` 中添加：
+
+```ruby
+pod 'iOS-Evaluate', '~> 2.0'
+```
+
+然后执行：
+
+```bash
+pod install
+```
 
 <br/>
 

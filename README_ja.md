@@ -8,6 +8,7 @@
 [![Platform](https://img.shields.io/badge/Platform-iOS_26+-blue?logo=apple)](https://developer.apple.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SPM](https://img.shields.io/badge/SPM-Compatible-brightgreen?logo=swift)](https://swift.org/package-manager/)
+[![CocoaPods](https://img.shields.io/cocoapods/v/iOS-Evaluate?logo=cocoapods&color=red)](https://cocoapods.org/pods/iOS-Evaluate)
 
 iOS 26+ 向けのモダンでスタイリッシュなアプリレビュー促進ライブラリ。**SwiftUI グラデーションデザイン**、**Swift 6 並行処理**、**30 以上の言語ローカライズ** に対応。
 
@@ -42,6 +43,20 @@ iOS 26+ 向けのモダンでスタイリッシュなアプリレビュー促進
    https://github.com/zhanggenlove/iOS-Evaluate.git
    ```
 3. バージョンルールを選択し、ターゲットに追加。
+
+### CocoaPods
+
+`Podfile` に追加：
+
+```ruby
+pod 'iOS-Evaluate', '~> 2.0'
+```
+
+次に実行：
+
+```bash
+pod install
+```
 
 <br/>
 

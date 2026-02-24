@@ -8,6 +8,7 @@
 [![Platform](https://img.shields.io/badge/Platform-iOS_26+-blue?logo=apple)](https://developer.apple.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SPM](https://img.shields.io/badge/SPM-Compatible-brightgreen?logo=swift)](https://swift.org/package-manager/)
+[![CocoaPods](https://img.shields.io/cocoapods/v/iOS-Evaluate?logo=cocoapods&color=red)](https://cocoapods.org/pods/iOS-Evaluate)
 
 iOS 26+ 를 위한 현대적이고 아름다운 앱 리뷰 요청 라이브러리. **SwiftUI 그라디언트 디자인**, **Swift 6 동시성**, **30개 이상 언어 현지화**를 지원합니다.
 
@@ -42,6 +43,20 @@ iOS 26+ 를 위한 현대적이고 아름다운 앱 리뷰 요청 라이브러�
    https://github.com/zhanggenlove/iOS-Evaluate.git
    ```
 3. 버전 규칙을 선택하고 타겟에 추가.
+
+### CocoaPods
+
+`Podfile`에 추가:
+
+```ruby
+pod 'iOS-Evaluate', '~> 2.0'
+```
+
+그런 다음 실행:
+
+```bash
+pod install
+```
 
 <br/>
 

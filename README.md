@@ -8,6 +8,7 @@
 [![Platform](https://img.shields.io/badge/Platform-iOS_26+-blue?logo=apple)](https://developer.apple.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SPM](https://img.shields.io/badge/SPM-Compatible-brightgreen?logo=swift)](https://swift.org/package-manager/)
+[![CocoaPods](https://img.shields.io/cocoapods/v/iOS-Evaluate?logo=cocoapods&color=red)](https://cocoapods.org/pods/iOS-Evaluate)
 
 A modern, beautiful app review prompt library for iOS 26+. Built with **SwiftUI gradient design**, **Swift 6 concurrency**, and full **localization** support (30+ languages).
 
@@ -42,6 +43,20 @@ A modern, beautiful app review prompt library for iOS 26+. Built with **SwiftUI 
    https://github.com/zhanggenlove/iOS-Evaluate.git
    ```
 3. Choose version rule and add to your target.
+
+### CocoaPods
+
+Add to your `Podfile`:
+
+```ruby
+pod 'iOS-Evaluate', '~> 2.0'
+```
+
+Then run:
+
+```bash
+pod install
+```
 
 <br/>
 
