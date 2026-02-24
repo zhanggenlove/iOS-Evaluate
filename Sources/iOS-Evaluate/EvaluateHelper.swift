@@ -3,147 +3,109 @@
 //  Evaluate
 //
 //  Created by Mister Grizzly on 12/17/20.
+//  Modernized for iOS 26+ and Swift 6
 //
 
 import Foundation
 
-class EvaluateHelper: NSObject {
-  enum EvaluateError: Error {
+/// Handles fetching app metadata from the iTunes Search API.
+@MainActor
+final class EvaluateHelper {
+
+  // MARK: - Error Types
+
+  enum HelperError: LocalizedError {
     case malformedURL
-    case missingBundleIdOrAppId
+    case dataRetrievalFailure(underlying: Error?)
+    case jsonParsingFailure
+    case appIDNotFound
+
+    var errorDescription: String? {
+      switch self {
+      case .malformedURL:
+        return "The iTunes lookup URL could not be constructed."
+      case .dataRetrievalFailure(let error):
+        return "Failed to retrieve App Store data: \(error?.localizedDescription ?? "unknown error")"
+      case .jsonParsingFailure:
+        return "Failed to parse App Store JSON response."
+      case .appIDNotFound:
+        return "The 'trackId' field was not found in the API response."
+      }
+    }
   }
-  
-  enum EvaluateErrorCode: Int {
-    case malformedURL = 1000
-    case appStoreDataRetrievalFailure
-    case appStoreJSONParsingFailure
-    case appStoreAppIDFailure
+
+  // MARK: - iTunes API Response (Codable)
+
+  private struct ITunesResponse: Decodable {
+    let resultCount: Int
+    let results: [ITunesResult]
   }
-  
+
+  private struct ITunesResult: Decodable {
+    let trackId: Int
+    let version: String?
+    let trackName: String?
+  }
+
+  // MARK: - Singleton
+
   static let `default` = EvaluateHelper()
-  
-  @objc let EvaluateErrorDomain = "EvaluateHelper Error Domain"
-  
-  private override init() {
-    super.init()
-  }
-  
+
+  private init() {}
+
+  // MARK: - Public API
+
+  /// Fetches app metadata from iTunes and updates `Evaluate` with the App ID.
   func startParsingData() {
     Task {
       do {
-        let url = try getiTunesURL()
+        let url = try buildITunesURL()
         let request = URLRequest(url: url, cachePolicy: .reloadIgnoringCacheData, timeoutInterval: 30)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        processResults(withData: data, response: response, error: nil)
-      } catch let error {
-        if let urlError = error as? URLError {
-            postError(.appStoreDataRetrievalFailure, underlyingError: urlError)
-        } else if let evalError = error as? EvaluateError {
-            postError(.malformedURL, underlyingError: evalError)
-        } else {
-            postError(.appStoreDataRetrievalFailure, underlyingError: error)
-        }
+        let (data, _) = try await URLSession.shared.data(for: request)
+        try processResponse(data: data)
+      } catch {
+        log(error.localizedDescription)
       }
     }
   }
-  
-  private func processResults(withData data: Data?, response: URLResponse?, error: Error?) {
-    if let error = error {
-      self.postError(.appStoreDataRetrievalFailure, underlyingError: error)
-    } else {
-      guard let data = data else {
-        self.postError(.appStoreDataRetrievalFailure, underlyingError: nil)
-        return
-      }
-      
-      do {
-        let jsonData = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.allowFragments)
-        guard let appData = jsonData as? [String: Any] else {
-          self.postError(.appStoreJSONParsingFailure, underlyingError: nil)
-          return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-          self?.processVersionCheck(withResults: appData)
-        }
-        
-      } catch let error {
-        self.postError(.appStoreDataRetrievalFailure, underlyingError: error)
-      }
+
+  // MARK: - Private
+
+  private func processResponse(data: Data) throws {
+    let response = try JSONDecoder().decode(ITunesResponse.self, from: data)
+
+    guard let firstResult = response.results.first else {
+      throw HelperError.dataRetrievalFailure(underlying: nil)
     }
+
+    let appID = String(firstResult.trackId)
+    Evaluate.appID = appID
+    Evaluate.default.incrementAppUsagesCount()
   }
-  
-  private func processVersionCheck(withResults results: [String: Any]) {
-    defer {
-      Evaluate.default.incrementAppUsagesCount()
-    }
-    guard let allResults = results["results"] as? [[String: Any]] else {
-      self.postError(.appStoreDataRetrievalFailure, underlyingError: nil)
-      return
-    }
-    
-    // The App is not in App Store
-    guard !allResults.isEmpty else {
-      postError(.appStoreDataRetrievalFailure, underlyingError: nil)
-      return
-    }
-    
-    guard let appID = allResults.first?["trackId"] as? Int else {
-      postError(.appStoreAppIDFailure, underlyingError: nil)
-      return
-    }
-    
-    Evaluate.default.setAppID(String(appID))
-  }
-  
-  private func getiTunesURL() throws -> URL {
+
+  private func buildITunesURL() throws -> URL {
     var components = URLComponents()
     components.scheme = "https"
     components.host = "itunes.apple.com"
+
     if let countryCode = Evaluate.countryCode {
       components.path = "/\(countryCode)/lookup"
     } else {
       components.path = "/lookup"
     }
-    
-    let items: [URLQueryItem] = [URLQueryItem(name: "bundleId", value: Bundle.bundleID)]
-    
-    components.queryItems = items
-    
-    guard let url = components.url, !url.absoluteString.isEmpty else {
-      throw EvaluateError.malformedURL
+
+    components.queryItems = [
+      URLQueryItem(name: "bundleId", value: Bundle.bundleID)
+    ]
+
+    guard let url = components.url else {
+      throw HelperError.malformedURL
     }
-    
     return url
   }
-  
-  private func postError(_ code: EvaluateErrorCode, underlyingError: Error?) {
-    let description: String
-    
-    switch code {
-    case .malformedURL:
-      description = "The iTunes URL is malformed. Please leave an issue on http://github.com/ArtSabintsev/Siren with as many details as possible."
-    case .appStoreDataRetrievalFailure:
-      description = "Error retrieving App Store data as an error was returned."
-    case .appStoreJSONParsingFailure:
-      description = "Error parsing App Store JSON data."
-    case .appStoreAppIDFailure:
-      description = "Error retrieving trackId as results.first does not contain a 'trackId' key."
-    }
-    
-    var userInfo: [String: Any] = [NSLocalizedDescriptionKey: description]
-    
-    if let underlyingError = underlyingError {
-      userInfo[NSUnderlyingErrorKey] = underlyingError
-    }
-    
-    let error = NSError(domain: EvaluateErrorDomain, code: code.rawValue, userInfo: userInfo)
-    printMessage(message: error.localizedDescription)
-  }
-  
-  private func printMessage(message: String) {
-    if Evaluate.canShowLogs {
-      print("[Evaluate] \(message)")
-    }
+
+  private func log(_ message: String) {
+    guard Evaluate.canShowLogs else { return }
+    print("[Evaluate] \(message)")
   }
 }

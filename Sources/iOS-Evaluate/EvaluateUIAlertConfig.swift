@@ -1,38 +1,55 @@
 //
-//  EvaluateUIAlertConfig.swift
+//  EvaluateTheme.swift
 //  Evaluate
 //
-//  Created by Mister Grizzly on 12/17/20.
+//  Modernized for iOS 26+
 //
 
-import UIKit
+import SwiftUI
 
-@objc public class EvaluateUIAlertConfig: NSObject {
-  
-  @objc public var image: UIImage?
-  
-  @objc public var buttonsColor: UIColor?
-  
-  @objc public var titleColor: UIColor?
-  @objc public var titleFont: UIFont?
-  
-  @objc public var messageColor: UIColor?
-  @objc public var messageFont: UIFont?
-  
-  @objc public init(image: UIImage? = nil,
-              buttonsColor: UIColor? = nil,
-              titleColor: UIColor? = nil,
-              titleFont: UIFont? = nil,
-              messageColor: UIColor? = nil,
-              messageFont: UIFont? = nil) {
-    
-    self.image = image
-    self.buttonsColor = buttonsColor
-    
-    self.titleColor = titleColor
+/// Configuration for customizing the review prompt appearance.
+public struct EvaluateTheme: Sendable {
+
+  /// The image displayed at the top of the review card.
+  public var headerImage: Image?
+
+  /// Accent color used for primary action buttons.
+  public var accentColor: Color
+
+  /// Color for secondary/cancel actions.
+  public var secondaryColor: Color
+
+  /// Title text font.
+  public var titleFont: Font
+
+  /// Message body font.
+  public var messageFont: Font
+
+  /// Button label font.
+  public var buttonFont: Font
+
+  /// Card corner radius.
+  public var cornerRadius: CGFloat
+
+  /// Creates a theme with sensible defaults.
+  public init(
+    headerImage: Image? = Image(systemName: "star.fill"),
+    accentColor: Color = .yellow,
+    secondaryColor: Color = .secondary,
+    titleFont: Font = .title2.bold(),
+    messageFont: Font = .subheadline,
+    buttonFont: Font = .body.weight(.medium),
+    cornerRadius: CGFloat = 24
+  ) {
+    self.headerImage = headerImage
+    self.accentColor = accentColor
+    self.secondaryColor = secondaryColor
     self.titleFont = titleFont
-    
-    self.messageColor = messageColor
     self.messageFont = messageFont
+    self.buttonFont = buttonFont
+    self.cornerRadius = cornerRadius
   }
+
+  /// The default theme.
+  public static let `default` = EvaluateTheme()
 }

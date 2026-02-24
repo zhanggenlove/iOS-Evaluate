@@ -3,182 +3,223 @@
 //  Evaluate
 //
 //  Created by Mister Grizzly on 12/8/20.
+//  Modernized for iOS 26+ and Swift 6
 //
 
 import Foundation
 import UIKit
 import StoreKit
+import SwiftUI
 
-@objc public class Evaluate: NSObject {
-  
-  @objc public static var useStoreKitIfAvailable: Bool = true
-  @objc public static var showRemindLaterButton: Bool = true
-  
-  @objc public static var countryCode: String?
-  
-  @objc public static var alertTitle: String?
-  @objc public static var alertMessage: String?
-  @objc public static var alertCancelTitle: String?
-  @objc static var alertRateAppTitle: String?
-  @objc public static var alertAppStoreTitle: String?
-  @objc public static var alertRemindLaterTitle: String?
-  @objc public static var appName: String?
-  
-  @objc public static var uiConfiguration: EvaluateUIAlertConfig?
-  
-  @objc public static var canShowLogs: Bool = false
-  @objc public static var resetEverythingWhenAppIsUpdated: Bool = true
-  
-  @objc public static let `default` = Evaluate()
-  
-  @objc public static var isRateDone: Bool {
-    return UserPreferencesManager.default.isRateDone
+/// The main entry point for the Evaluate review prompt library.
+///
+/// Configure thresholds and call `Evaluate.start()` from your app launch,
+/// then trigger `Evaluate.rateApp(in:)` at the right moment.
+@MainActor
+public final class Evaluate {
+
+  // MARK: - Configuration
+
+  /// Whether to use StoreKit's native review prompt.
+  public static var useStoreKitIfAvailable: Bool = true
+
+  /// Whether to show the "Remind me later" button.
+  public static var showRemindLaterButton: Bool = true
+
+  /// Country code for the iTunes lookup (e.g., "us", "jp").
+  public static var countryCode: String?
+
+  // MARK: - Text Customization
+
+  /// Custom alert title. Defaults to localized "Rate {AppName}".
+  public static var alertTitle: String?
+
+  /// Custom alert message. Defaults to localized prompt text.
+  public static var alertMessage: String?
+
+  /// Custom cancel button title.
+  public static var alertCancelTitle: String?
+
+  /// Custom rate button title.
+  public static var alertRateAppTitle: String?
+
+  /// Custom "Write a review" button title.
+  public static var alertAppStoreTitle: String?
+
+  /// Custom "Remind me later" button title.
+  public static var alertRemindLaterTitle: String?
+
+  /// Custom app name override.
+  public static var appName: String?
+
+  // MARK: - Theme
+
+  /// UI theme configuration. Uses `EvaluateTheme.default` if not set.
+  public static var theme: EvaluateTheme = .default
+
+  // MARK: - Debug & Behavior
+
+  /// Enable console logging for debugging.
+  public static var canShowLogs: Bool = false
+
+  /// Reset all tracking data when the app version changes.
+  public static var resetEverythingWhenAppIsUpdated: Bool = true
+
+  // MARK: - State
+
+  /// The app's App Store ID (auto-detected or manually set).
+  public static var appID: String?
+
+  /// Whether the user has already completed the rating flow.
+  public static var isRateDone: Bool {
+    UserPreferencesManager.default.isRateDone
   }
-  
-  @objc public static var appID: String?
-  
-  private var appName: String {
-    return Evaluate.appName ?? Bundle.appName
+
+  // MARK: - Singleton
+
+  /// Shared instance for internal use.
+  public static let `default` = Evaluate()
+
+  private init() {}
+
+  // MARK: - Computed Text
+
+  private var resolvedAppName: String {
+    Self.appName ?? Bundle.appName
   }
-  
+
   private var titleText: String {
-    return Evaluate.alertTitle ?? String(format: String.localize("Rate %@"), appName)
+    Self.alertTitle ?? String(format: String.localize("Rate %@"), resolvedAppName)
   }
-  
+
   private var messageText: String {
-    return Evaluate.alertMessage ?? String(format: String.localize("Rater.title"), appName)
+    Self.alertMessage ?? String(format: String.localize("Rater.title"), resolvedAppName)
   }
-  
+
   private var rateText: String {
-    return Evaluate.alertRateAppTitle ?? String(format: String.localize("Rate %@"), appName)
+    Self.alertRateAppTitle ?? String(format: String.localize("Rate %@"), resolvedAppName)
   }
-  
+
   private var writeReviewText: String {
-    return Evaluate.alertRateAppTitle ?? String.localize("Write a review on App Store")
+    Self.alertAppStoreTitle ?? String.localize("Write a review on App Store")
   }
-  
+
   private var cancelText: String {
-    return Evaluate.alertCancelTitle ?? String.localize("No, Thanks")
+    Self.alertCancelTitle ?? String.localize("No, Thanks")
   }
-  
+
   private var remindLaterText: String {
-    return Evaluate.alertRemindLaterTitle ?? String.localize("Remind me later")
+    Self.alertRemindLaterTitle ?? String.localize("Remind me later")
   }
-    
-  /// Check if the app has been used enough days
-  @objc public static var daysUntilAlertWillBeShown: Int {
-    get {
-      return UserPreferencesManager.default.daysUntilAlertWillBeShown
-    }
-    set {
-      UserPreferencesManager.default.daysUntilAlertWillBeShown = newValue
-    }
+
+  // MARK: - Threshold Configuration
+
+  /// Number of days after first launch before prompting.
+  public static var daysUntilAlertWillBeShown: Int {
+    get { UserPreferencesManager.default.daysUntilAlertWillBeShown }
+    set { UserPreferencesManager.default.daysUntilAlertWillBeShown = newValue }
   }
-  
-  /// Check if the app has been used enough times
-  @objc public static var appUsesUntilAlertWillBeShown: Int {
-    get {
-      return UserPreferencesManager.default.appUsesUntilAlertWillBeShown
-    }
-    set {
-      UserPreferencesManager.default.appUsesUntilAlertWillBeShown = newValue
-    }
+
+  /// Number of app launches before prompting.
+  public static var appUsesUntilAlertWillBeShown: Int {
+    get { UserPreferencesManager.default.appUsesUntilAlertWillBeShown }
+    set { UserPreferencesManager.default.appUsesUntilAlertWillBeShown = newValue }
   }
-  
-  /// Check if the user has done enough significant events
-  @objc public static var significantUsesUntilAlertWillBeShown: Int {
-    get {
-      return UserPreferencesManager.default.significantUsesUntilAlertWillBeShown
-    }
-    set {
-      UserPreferencesManager.default.significantUsesUntilAlertWillBeShown = newValue
-    }
+
+  /// Number of significant events before prompting.
+  public static var significantUsesUntilAlertWillBeShown: Int {
+    get { UserPreferencesManager.default.significantUsesUntilAlertWillBeShown }
+    set { UserPreferencesManager.default.significantUsesUntilAlertWillBeShown = newValue }
   }
-  
-  /// If the user wants to be reminded later, has passed enough time passed since then?
-  @objc public static var numberOfDaysBeforeRemindingAfterCancelation: Int {
-    get {
-      return UserPreferencesManager.default.numberOfDaysBeforeReminding
-    }
-    set {
-      UserPreferencesManager.default.numberOfDaysBeforeReminding = newValue
-    }
+
+  /// Number of days before re-prompting after "Remind me later".
+  public static var numberOfDaysBeforeRemindingAfterCancelation: Int {
+    get { UserPreferencesManager.default.numberOfDaysBeforeReminding }
+    set { UserPreferencesManager.default.numberOfDaysBeforeReminding = newValue }
   }
-  
-  @objc public static var activateDebugMode: Bool {
-    get {
-      return UserPreferencesManager.default.isDebugModeEnabled
-    }
-    set {
-      UserPreferencesManager.default.isDebugModeEnabled = newValue
-    }
+
+  /// Enable debug mode (always shows the prompt).
+  public static var activateDebugMode: Bool {
+    get { UserPreferencesManager.default.isDebugModeEnabled }
+    set { UserPreferencesManager.default.isDebugModeEnabled = newValue }
   }
-  
-  private static var controller: UIViewController?
-  
-  private override init() {
-    super.init()
-  }
-  
-  @objc public static func rateApp(in controller: UIViewController) {
-    self.controller = controller
-    DispatchQueue.main.async {
-      if UserPreferencesManager.default.allConditionsHaveBeenMet {
-        let viewModel = ReviewAlertViewModel(title: Evaluate.default.titleText, message: Evaluate.default.messageText,
-                                             rateAppOption: UIApplication.shared.isAvailableRequestReview() ? ReviewAlertAction(title: Evaluate.default.rateText, preferredStyle: .default) : nil,
-                                             writeAppStoreReviewOption: ReviewAlertAction(title: Evaluate.default.writeReviewText, preferredStyle: .default),
-                                             remindLaterOption: showRemindLaterButton ?  ReviewAlertAction(title: Evaluate.default.remindLaterText, preferredStyle: .default) : nil,
-                                             cancelOption: ReviewAlertAction(title: Evaluate.default.cancelText, preferredStyle: .cancel))
-        
-        controller.showAlert(using: uiConfiguration, viewModel: viewModel) { _ in
-          if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-              SKStoreReviewController.requestReview(in: scene)
-          }
-        } writeAppStoreReviewCompletion: { _ in
-          UIApplication.shared.rateAppInAppStore(using: Evaluate.appID)
-        } remindLaterCompletion: { _ in
-          UserPreferencesManager.default.saveReminderRequestDate()
-          controller.dismiss(animated: true, completion: nil)
-        } cancelCompletion: { _ in
-          UserPreferencesManager.default.isRateDone = true
-          controller.dismiss(animated: true, completion: nil)
+
+  // MARK: - Public API
+
+  /// Shows the review prompt if all configured conditions are met.
+  ///
+  /// - Parameter controller: The view controller to present the prompt from.
+  public static func rateApp(in controller: UIViewController) {
+    guard UserPreferencesManager.default.allConditionsHaveBeenMet else { return }
+
+    let instance = Evaluate.default
+
+    let reviewView = EvaluateReviewView(
+      title: instance.titleText,
+      message: instance.messageText,
+      rateButtonTitle: instance.rateText,
+      writeReviewButtonTitle: instance.writeReviewText,
+      remindLaterButtonTitle: showRemindLaterButton ? instance.remindLaterText : nil,
+      cancelButtonTitle: instance.cancelText,
+      theme: theme,
+      onRateApp: {
+        if let scene = UIApplication.shared.connectedScenes
+          .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+          SKStoreReviewController.requestReview(in: scene)
         }
+        controller.dismiss(animated: true)
+      },
+      onWriteReview: {
+        UIApplication.shared.rateAppInAppStore(using: Evaluate.appID)
+        controller.dismiss(animated: true)
+      },
+      onRemindLater: {
+        UserPreferencesManager.default.saveReminderRequestDate()
+        controller.dismiss(animated: true)
+      },
+      onCancel: {
+        UserPreferencesManager.default.isRateDone = true
+        controller.dismiss(animated: true)
       }
-    }
+    )
+
+    let hostingController = EvaluateReviewHostingController(reviewView: reviewView)
+    controller.present(hostingController, animated: true)
   }
-  
-  @objc public static func start() {
-    if Evaluate.resetEverythingWhenAppIsUpdated && Bundle.appVersion != UserPreferencesManager.default.appTrackingVersion {
+
+  /// Call this once during app launch to begin tracking usage.
+  public static func start() {
+    if resetEverythingWhenAppIsUpdated,
+       Bundle.appVersion != UserPreferencesManager.default.appTrackingVersion {
       UserPreferencesManager.default.resetAllValues()
       UserPreferencesManager.default.appTrackingVersion = Bundle.appVersion
     }
-    
     Evaluate.default.perform()
   }
-  
-  @objc public static func reset() {
+
+  /// Resets all tracking data (usage counts, dates, rate status).
+  public static func reset() {
     UserPreferencesManager.default.resetAllValues()
   }
-  
-  // MARK: Private methods
+
+  // MARK: - Internal
+
+  func incrementAppUsagesCount() {
+    UserPreferencesManager.default.incrementAppUsesCount()
+  }
+
+  /// Manually increment significant event counter.
+  public func incrementSignificantUseCount() {
+    UserPreferencesManager.default.incrementSignificantUsesCount()
+  }
+
+  // MARK: - Private
 
   private func perform() {
-    if Evaluate.appName != nil {
+    if Self.appName != nil {
       incrementAppUsagesCount()
     } else {
       EvaluateHelper.default.startParsingData()
     }
-  }
-  
-  func incrementAppUsagesCount() {
-    UserPreferencesManager.default.incrementAppUsesCount()
-  }
-  
-  func setAppID(_ id: String) {
-    Evaluate.appID = id
-  }
-  
-  private func incrementSignificantUseCount() {
-    UserPreferencesManager.default.incrementSignificantUsesCount()
   }
 }

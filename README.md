@@ -1,122 +1,139 @@
 # iOS-Evaluate
 
-`iOS-Evaluate` is a modern, flexible, and powerful Swift Package designed to prompt your iOS app users to rate and review your app on the App Store when the conditions are just right. If they decline the rating, it allows reminding them later based on intelligent rules. 
+[![Swift](https://img.shields.io/badge/Swift-6.2-orange?logo=swift)](https://www.swift.org)
+[![Platform](https://img.shields.io/badge/Platform-iOS_26+-blue?logo=apple)](https://developer.apple.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![SPM](https://img.shields.io/badge/SPM-Compatible-brightgreen?logo=swift)](https://swift.org/package-manager/)
+
+A modern, beautiful app review prompt library for iOS 26+. Built with **SwiftUI glassmorphic design**, **Swift 6 concurrency**, and full **localization** support (30+ languages).
 
 <br/>
 
-## 🌟 Features
+## ✨ Highlights
 
-- **Rule-Based Triggers**: Ask for a review only after the user has engaged with your app contextually. Check against days installed, app launches, or significant events (like completing a level or making a purchase).
-- **Concurrency & Modern Support**: Built using `async/await` network checks and iOS 14+ `SKStoreReviewController.requestReview(in: windowScene)` API.
-- **Deeply Customizable UI**: You can reconfigure title, message, and button texts, and customize the visual appeal of custom UIAlertControllers.
-- **Fully Localized**: Ships out-of-the-box with support for over 30+ languages. 
+| Feature | Description |
+|---|---|
+| 🪟 **Glassmorphic UI** | Translucent material card with animated star icons and spring transitions |
+| 🎯 **Smart Triggers** | Prompt based on days installed, app launches, or significant events |
+| 🔄 **SwiftUI + UIKit** | Native `.evaluateReviewPrompt()` modifier AND `UIViewController` support |
+| 🌍 **30+ Languages** | Ships with localization for Afrikaans to Vietnamese |
+| ⚡ **Swift 6 Ready** | `@MainActor`, `Sendable`, `async/await` throughout |
+| 📳 **Haptic Feedback** | Subtle tactile responses on button interactions |
 
 <br/>
 
 ## 📦 Installation
 
-### Swift Package Manager (SPM)
+### Swift Package Manager
 
-1. Open your project in Xcode.
-2. Go to **File > Add Packages...**
-3. Enter the GitHub repository URL setup for this package:
-   ```text
-   git@github.com:zhanggenlove/iOS-Evaluate.git
+1. In Xcode, go to **File → Add Package Dependencies...**
+2. Enter the repository URL:
    ```
-4. Choose the dependency rule (e.g., `Up to Next Major Version`) and select your app target.
+   https://github.com/zhanggenlove/iOS-Evaluate.git
+   ```
+3. Choose version rule and add to your target.
 
 <br/>
 
 ## 🛠 Usage
 
-Integrating `Evaluate` is extremely straightforward. It is recommended to perform setup configurations in your `AppDelegate` or upon app launch, and then request evaluations at the most engaging moments in your application context.
-
-### 1. Basic Setup
-
-In your `SceneDelegate.swift` or `AppDelegate.swift`:
+### Setup (AppDelegate / App init)
 
 ```swift
 import Evaluate
 
-func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    
-    // Set your exact App ID (Available in App Store Connect)
-    Evaluate.appID = "YOUR_APP_ID"
-    
-    // Setup rules BEFORE calling Evaluate.start()
-    // e.g., prompt user only after 5 days of usage
-    Evaluate.daysUntilAlertWillBeShown = 5
-    // OR prompt after 10 app launches
-    Evaluate.appUsesUntilAlertWillBeShown = 10
-    // OR prompt after 3 "significant events" manually recorded
-    Evaluate.significantUsesUntilAlertWillBeShown = 3
-    
-    // Setup reminder delay (if user clicked 'Remind me later')
-    Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7
+// Configure trigger rules
+Evaluate.daysUntilAlertWillBeShown = 5
+Evaluate.appUsesUntilAlertWillBeShown = 10
+Evaluate.significantUsesUntilAlertWillBeShown = 3
+Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7
 
-    // Start tracking usages and prepare fetching App Store data asynchronously
-    Evaluate.start()
-    
-    return true
-}
+// Start tracking
+Evaluate.start()
 ```
 
-### 2. Triggering the Rating Prompt
-
-Show the prompt at a user-friendly moment (e.g., after the user completes a task, wins a game, finishes an edit, etc.). It will **only** display if the rules defined during setup are met.
+### SwiftUI — Native Modifier
 
 ```swift
+import SwiftUI
 import Evaluate
 
-class ProfileViewController: UIViewController {
-    
-    func userDidCompleteAction() {
-        // Evaluate will display the StoreKit review controller if the user has 
-        // fulfilled the launch/day/event requirements and hasn't rated yet.
-        Evaluate.rateApp(in: self)
+struct ContentView: View {
+  @State private var showReview = false
+
+  var body: some View {
+    Button("Complete Task") {
+      // Check conditions and show if met
+      if Evaluate.isRateDone == false {
+        showReview = true
+      }
     }
+    .evaluateReviewPrompt(isPresented: $showReview)
+  }
 }
 ```
 
-### 3. Tracking Significant Events
-
-If you rely on `Evaluate.significantUsesUntilAlertWillBeShown`, you can manually increment the counter every time the user performs a high-value action. 
+### UIKit — One Line
 
 ```swift
-// Example: user uploaded a photo successfully
-Evaluate.default.incrementSignificantUseCount()
+import Evaluate
+
+class MyViewController: UIViewController {
+  func taskCompleted() {
+    Evaluate.rateApp(in: self)
+  }
+}
 ```
 
 <br/>
 
-## 🎨 Customizing the Alert 
+## 🎨 Theming
 
-`Evaluate` allows you to customize the alert text shown to your users. Simply assign custom localized strings to its properties during setup:
+Customize the review card appearance with `EvaluateTheme`:
 
 ```swift
-// Example of customized string configurations
-Evaluate.alertTitle = "Enjoying Our App?"
-Evaluate.alertMessage = "If you like our app, please take a moment to leave a review!"
-Evaluate.alertRateAppTitle = "Rate 5 Stars"
-Evaluate.alertAppStoreTitle = "Write a Review"
-Evaluate.alertRemindLaterTitle = "Maybe Later"
-Evaluate.alertCancelTitle = "No, Thanks"
+Evaluate.theme = EvaluateTheme(
+  headerImage: Image(systemName: "heart.fill"),
+  accentColor: .pink,
+  titleFont: .title3.bold(),
+  cornerRadius: 28
+)
 ```
 
 <br/>
 
-## 🧑‍💻 Debugging
-During development, if you want to bypass all logic rules and continually display the rating alert for testing the UI, turn on the debug flag:
+## 🧪 Debug Mode
+
+Bypass all trigger rules during development:
+
 ```swift
 Evaluate.activateDebugMode = true
 ```
-> **❗️ Note:** Make sure to turn this `= false` (or remove it) before shipping your app to production!
+
+> ⚠️ Remember to disable this before releasing to the App Store.
 
 <br/>
 
-## ⚙️ App Store Checking Notes
-`EvaluateHelper` connects via `async/await` to iTunes to fetch and track real app data (version logic vs bundle check). It requires an active internet connection to pre-fetch App ID validation.
+## 🌐 Localization
 
----
+iOS-Evaluate ships with translations for **30+ languages** including:
 
-*Powered by [iOS-Evaluate](https://github.com/zhanggenlove/iOS-Evaluate).*
+English, 简体中文, 繁體中文, 日本語, 한국어, Français, Deutsch, Español, Português, Italiano, Русский, العربية, हिन्दी, Tiếng Việt, and many more.
+
+The library auto-detects the user's system language. No additional setup required.
+
+<br/>
+
+## 📋 Requirements
+
+| Requirement | Version |
+|---|---|
+| iOS | 26.0+ |
+| Swift | 6.2+ |
+| Xcode | 26+ |
+
+<br/>
+
+## 📄 License
+
+iOS-Evaluate is available under the [MIT License](LICENSE).
