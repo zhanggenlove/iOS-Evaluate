@@ -30,8 +30,8 @@ struct EvaluateReviewView: View {
 
   var body: some View {
     ZStack {
-      // Dimmed background with blur
-      Color.black.opacity(appeared ? 0.45 : 0)
+      // Light dimmed background
+      Color.black.opacity(appeared ? 0.25 : 0)
         .ignoresSafeArea()
         .onTapGesture { /* block dismiss */ }
 
@@ -95,21 +95,30 @@ struct EvaluateReviewView: View {
       }
       .padding(.horizontal, 24)
       .frame(maxWidth: 330)
-      .background { cardBackgroundView }
-      .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
-      .overlay {
-        RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
-          .strokeBorder(
+      .background {
+        ZStack {
+          // Bright white base
+          RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
+            .fill(Color(.systemBackground))
+
+          // Subtle warm gradient highlight at top
+          VStack {
             LinearGradient(
-              colors: [.white.opacity(0.5), .white.opacity(0.1), .clear],
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            ),
-            lineWidth: 0.5
-          )
+              colors: [
+                theme.primaryGradient.first?.opacity(0.06) ?? .clear,
+                .clear
+              ],
+              startPoint: .top,
+              endPoint: .center
+            )
+            Spacer()
+          }
+          .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
+        }
       }
-      .shadow(color: .black.opacity(0.2), radius: 30, y: 15)
-      .shadow(color: theme.primaryGradient.first?.opacity(0.15) ?? .clear, radius: 40, y: 20)
+      .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
+      .shadow(color: .black.opacity(0.12), radius: 30, y: 12)
+      .shadow(color: theme.primaryGradient.first?.opacity(0.1) ?? .clear, radius: 40, y: 20)
       .scaleEffect(appeared ? 1 : 0.85)
       .opacity(appeared ? 1 : 0)
     }
@@ -117,28 +126,6 @@ struct EvaluateReviewView: View {
     .onAppear {
       appeared = true
       animateStars()
-    }
-  }
-
-  // MARK: - Card Background
-
-  @ViewBuilder
-  private var cardBackgroundView: some View {
-    switch theme.cardBackground {
-    case .glass:
-      ZStack {
-        Rectangle().fill(.ultraThinMaterial)
-        // Subtle white gradient overlay for depth
-        LinearGradient(
-          colors: [.white.opacity(0.08), .clear],
-          startPoint: .top,
-          endPoint: .bottom
-        )
-      }
-    case .solid(let color):
-      Rectangle().fill(color)
-    case .gradient(let colors):
-      LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
   }
 
@@ -212,11 +199,7 @@ struct EvaluateReviewView: View {
         .padding(.vertical, 16)
         .background {
           RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(Color(.systemBackground).opacity(0.6))
-            .overlay {
-              RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-            }
+            .fill(Color(.secondarySystemBackground))
         }
     }
     .buttonStyle(ScaleButtonStyle())
