@@ -9,10 +9,20 @@ import Foundation
 
 extension String {
   static func localize(_ key: String) -> String {
-    return NSLocalizedString(key, tableName: "EvaluateLocalization", bundle: Bundle(for: Evaluate.self), comment: "")
+#if SWIFT_PACKAGE
+    let bundle = Bundle.module
+#else
+    let bundle = Bundle(for: Evaluate.self)
+#endif
+    return NSLocalizedString(key, tableName: "EvaluateLocalization", bundle: bundle, comment: "")
   }
   
   var localize: String {
-    return NSLocalizedString(self, tableName: "EvaluateLocalization", bundle: Bundle(for: Evaluate.self), comment: "")
+#if SWIFT_PACKAGE
+    let bundle = Bundle.module
+#else
+    let bundle = Bundle(for: Evaluate.self)
+#endif
+    return NSLocalizedString(self, tableName: "EvaluateLocalization", bundle: bundle, comment: "")
   }
 }
