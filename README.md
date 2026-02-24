@@ -5,7 +5,13 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SPM](https://img.shields.io/badge/SPM-Compatible-brightgreen?logo=swift)](https://swift.org/package-manager/)
 
-A modern, beautiful app review prompt library for iOS 26+. Built with **SwiftUI glassmorphic design**, **Swift 6 concurrency**, and full **localization** support (30+ languages).
+A modern, beautiful app review prompt library for iOS 26+. Built with **SwiftUI gradient design**, **Swift 6 concurrency**, and full **localization** support (30+ languages).
+
+<br/>
+
+<p align="center">
+  <img src="Assets/preview.png" width="300" alt="iOS-Evaluate Preview" />
+</p>
 
 <br/>
 
@@ -13,7 +19,7 @@ A modern, beautiful app review prompt library for iOS 26+. Built with **SwiftUI 
 
 | Feature | Description |
 |---|---|
-| 🪟 **Glassmorphic UI** | Translucent material card with animated star icons and spring transitions |
+| 🎨 **Gradient UI** | Vibrant gradient buttons, animated gold star icons, and haptic feedback |
 | 🎯 **Smart Triggers** | Prompt based on days installed, app launches, or significant events |
 | 🔄 **SwiftUI + UIKit** | Native `.evaluateReviewPrompt()` modifier AND `UIViewController` support |
 | 🌍 **30+ Languages** | Ships with localization for Afrikaans to Vietnamese |
@@ -63,7 +69,6 @@ struct ContentView: View {
 
   var body: some View {
     Button("Complete Task") {
-      // Check conditions and show if met
       if Evaluate.isRateDone == false {
         showReview = true
       }
@@ -93,10 +98,10 @@ Customize the review card appearance with `EvaluateTheme`:
 
 ```swift
 Evaluate.theme = EvaluateTheme(
-  headerImage: Image(systemName: "heart.fill"),
-  accentColor: .pink,
-  titleFont: .title3.bold(),
-  cornerRadius: 28
+  starColors:       [.yellow, .orange],
+  primaryGradient:  [.blue, .purple],
+  secondaryGradient:[.gray.opacity(0.1), .gray.opacity(0.15)],
+  cornerRadius:     28
 )
 ```
 
