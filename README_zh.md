@@ -52,17 +52,43 @@
 ```swift
 import Evaluate
 
-// 配置触发规则
-Evaluate.daysUntilAlertWillBeShown = 5
-Evaluate.appUsesUntilAlertWillBeShown = 10
-Evaluate.significantUsesUntilAlertWillBeShown = 3
-Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7
+// ① 必填 — 设置你的 App Store ID
+Evaluate.appID = "123456789"
 
-// 开始追踪
+// ② 必填 — 设置应用名称（用于弹窗标题）
+Evaluate.appName = "我的应用"
+
+// ③ 配置触发规则（均为可选，可任意组合）
+Evaluate.daysUntilAlertWillBeShown = 5                    // 首次启动后的天数
+Evaluate.appUsesUntilAlertWillBeShown = 10                // 应用启动次数
+Evaluate.significantUsesUntilAlertWillBeShown = 3         // 重要事件次数
+Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7  // 点击"稍后提醒"后的再次提示间隔天数
+
+// ④ 开始追踪（启动时调用一次）
 Evaluate.start()
 ```
 
-### SwiftUI — 原生修饰符
+> [!TIP]
+> 如果未手动设置 `appID`，库会通过 iTunes Search API 根据 Bundle ID 自动检测。但**强烈建议手动设置**以确保可靠性。
+
+### 配置参考
+
+| 属性 | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `appID` | `String?` | 自动检测 | App Store 应用 ID（在 App Store Connect 中查看） |
+| `appName` | `String?` | `CFBundleDisplayName` | 弹窗标题中显示的应用名称 |
+| `alertTitle` | `String?` | 本地化文本 | 自定义标题 |
+| `alertMessage` | `String?` | 本地化文本 | 自定义消息内容 |
+| `alertRateAppTitle` | `String?` | 本地化文本 | "评分"按钮文字 |
+| `alertAppStoreTitle` | `String?` | 本地化文本 | "撰写评论"按钮文字 |
+| `alertRemindLaterTitle` | `String?` | 本地化文本 | "稍后提醒"按钮文字 |
+| `alertCancelTitle` | `String?` | 本地化文本 | "取消"按钮文字 |
+| `showRemindLaterButton` | `Bool` | `true` | 是否显示"稍后提醒"选项 |
+| `resetEverythingWhenAppIsUpdated` | `Bool` | `true` | 应用版本更新时重置所有追踪数据 |
+| `canShowLogs` | `Bool` | `false` | 启用控制台日志输出 |
+| `activateDebugMode` | `Bool` | `false` | 始终显示弹窗（跳过所有条件判断） |
+
+### 触发弹窗
 
 ```swift
 import SwiftUI

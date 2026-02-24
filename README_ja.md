@@ -52,17 +52,43 @@ iOS 26+ 向けのモダンでスタイリッシュなアプリレビュー促進
 ```swift
 import Evaluate
 
-// トリガールールを設定
-Evaluate.daysUntilAlertWillBeShown = 5
-Evaluate.appUsesUntilAlertWillBeShown = 10
-Evaluate.significantUsesUntilAlertWillBeShown = 3
-Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7
+// ① 必須 — App Store ID を設定
+Evaluate.appID = "123456789"
 
-// トラッキング開始
+// ② 必須 — アプリ名を設定（プロンプトタイトルに使用）
+Evaluate.appName = "マイアプリ"
+
+// ③ トリガールールを設定（すべてオプション、任意の組み合わせ可能）
+Evaluate.daysUntilAlertWillBeShown = 5                    // 初回起動からの日数
+Evaluate.appUsesUntilAlertWillBeShown = 10                // アプリ起動回数
+Evaluate.significantUsesUntilAlertWillBeShown = 3         // 重要イベント回数
+Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7  //「後で通知」後の再プロンプト間隔日数
+
+// ④ トラッキング開始（起動時に1回呼び出し）
 Evaluate.start()
 ```
 
-### SwiftUI — ネイティブモディファイア
+> [!TIP]
+> `appID` を手動設定しない場合、ライブラリは Bundle ID を使用して iTunes Search API 経由で自動検出を試みます。ただし、信頼性のために**手動設定を強く推奨**します。
+
+### 設定リファレンス
+
+| プロパティ | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `appID` | `String?` | 自動検出 | App Store アプリ ID（App Store Connect で確認） |
+| `appName` | `String?` | `CFBundleDisplayName` | プロンプトタイトルに表示されるアプリ名 |
+| `alertTitle` | `String?` | ローカライズ | カスタムタイトルテキスト |
+| `alertMessage` | `String?` | ローカライズ | カスタムメッセージ本文 |
+| `alertRateAppTitle` | `String?` | ローカライズ | 「評価」ボタンラベル |
+| `alertAppStoreTitle` | `String?` | ローカライズ | 「レビューを書く」ボタンラベル |
+| `alertRemindLaterTitle` | `String?` | ローカライズ | 「後で通知」ボタンラベル |
+| `alertCancelTitle` | `String?` | ローカライズ | 「キャンセル」ボタンラベル |
+| `showRemindLaterButton` | `Bool` | `true` | 「後で通知」オプションの表示/非表示 |
+| `resetEverythingWhenAppIsUpdated` | `Bool` | `true` | アプリバージョン変更時にトラッキングデータをリセット |
+| `canShowLogs` | `Bool` | `false` | コンソールログを有効化 |
+| `activateDebugMode` | `Bool` | `false` | 常にプロンプトを表示（すべてのルールをバイパス） |
+
+### プロンプトを表示
 
 ```swift
 import SwiftUI

@@ -52,15 +52,43 @@ A modern, beautiful app review prompt library for iOS 26+. Built with **SwiftUI 
 ```swift
 import Evaluate
 
-// Configure trigger rules
-Evaluate.daysUntilAlertWillBeShown = 5
-Evaluate.appUsesUntilAlertWillBeShown = 10
-Evaluate.significantUsesUntilAlertWillBeShown = 3
-Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7
+// ① Required — Set your App Store ID
+Evaluate.appID = "123456789"
 
-// Start tracking
+// ② Required — Set your app name (used in the prompt title)
+Evaluate.appName = "MyApp"
+
+// ③ Configure trigger rules (all optional, set any combination)
+Evaluate.daysUntilAlertWillBeShown = 5                    // Days since first launch
+Evaluate.appUsesUntilAlertWillBeShown = 10                // Number of app launches
+Evaluate.significantUsesUntilAlertWillBeShown = 3         // Significant events count
+Evaluate.numberOfDaysBeforeRemindingAfterCancelation = 7  // Re-prompt delay after "Remind me later"
+
+// ④ Start tracking (call once at launch)
 Evaluate.start()
 ```
+
+> [!TIP]
+> If you don't set `appID` manually, the library will attempt to auto-detect it via the iTunes Search API using your app's Bundle ID. However, **setting it explicitly is recommended** for reliability.
+
+### Configuration Reference
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `appID` | `String?` | Auto-detected | Your App Store app ID (found in App Store Connect) |
+| `appName` | `String?` | `CFBundleDisplayName` | App name shown in the prompt title |
+| `alertTitle` | `String?` | Localized | Custom title text |
+| `alertMessage` | `String?` | Localized | Custom message body |
+| `alertRateAppTitle` | `String?` | Localized | "Rate" button label |
+| `alertAppStoreTitle` | `String?` | Localized | "Write a review" button label |
+| `alertRemindLaterTitle` | `String?` | Localized | "Remind me later" button label |
+| `alertCancelTitle` | `String?` | Localized | "No thanks" button label |
+| `showRemindLaterButton` | `Bool` | `true` | Show/hide the "Remind me later" option |
+| `resetEverythingWhenAppIsUpdated` | `Bool` | `true` | Reset all tracking data on app version change |
+| `canShowLogs` | `Bool` | `false` | Enable console logging for debugging |
+| `activateDebugMode` | `Bool` | `false` | Always show the prompt (bypass all rules) |
+
+### Show the Prompt
 
 ### SwiftUI — Native Modifier
 
