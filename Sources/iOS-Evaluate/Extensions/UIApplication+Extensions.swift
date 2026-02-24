@@ -9,27 +9,18 @@ import UIKit
 import StoreKit
 
 extension UIApplication {
-  @available(iOS 13.0, *)
   var currentScene: UIWindowScene? {
     connectedScenes.first { $0.activationState == .foregroundActive } as? UIWindowScene
   }
   
   func requestReview() {
-    if #available(iOS 14.0, *) {
-      if let scene = UIApplication.shared.currentScene {
-        SKStoreReviewController.requestReview(in: scene)
-      }
-    } else {
-      SKStoreReviewController.requestReview()
+    if let scene = UIApplication.shared.currentScene {
+      SKStoreReviewController.requestReview(in: scene)
     }
   }
   
   func isAvailableRequestReview() -> Bool {
-    if #available(iOS 10.3, *) {
-      return true
-    }
-    
-    return false
+    return true
   }
   
   func rateAppInAppStore(using appID: String?) {

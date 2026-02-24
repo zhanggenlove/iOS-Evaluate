@@ -57,10 +57,8 @@ extension UIViewController {
       alertController.setTitleImage(image)
     }
     
-    if #available(iOS 10.3, *) {
-      if let rateAppOption = viewModel.rateAppOption {
-        alertController.addAction(UIAlertAction(title: rateAppOption.title, style: rateAppOption.preferredStyle, handler: rateAppCompletion))
-      }
+    if let rateAppOption = viewModel.rateAppOption {
+      alertController.addAction(UIAlertAction(title: rateAppOption.title, style: rateAppOption.preferredStyle, handler: rateAppCompletion))
     }
     
     alertController.addAction(UIAlertAction(title: viewModel.writeAppStoreReviewOption.title,

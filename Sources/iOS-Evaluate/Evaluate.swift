@@ -131,11 +131,8 @@ import StoreKit
                                              cancelOption: ReviewAlertAction(title: Evaluate.default.cancelText, preferredStyle: .cancel))
         
         controller.showAlert(using: uiConfiguration, viewModel: viewModel) { _ in
-          if #available(iOS 14.0, *),
-             let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+          if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
               SKStoreReviewController.requestReview(in: scene)
-          } else {
-              UIApplication.shared.requestReview()
           }
         } writeAppStoreReviewCompletion: { _ in
           UIApplication.shared.rateAppInAppStore(using: Evaluate.appID)
